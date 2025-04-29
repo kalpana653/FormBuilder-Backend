@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FormBuilder - Submission Confirmation</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>FormBuilder</h1>
+        </div>
+    </header>
+    
+    <nav>
+        <div class="container">
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/forms">My Forms</a></li>
+                <li><a href="/templates">Form Templates</a></li>
+                <li><a href="/admin">Admin</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <main class="container">
+        <div id="alert-container"></div>
+        
+        <div class="confirmation-container">
+            <div class="confirmation-message">
+                <i class="fas fa-check-circle success-icon"></i>
+                <h2>Form Submitted Successfully!</h2>
+                <p>Thank you for your submission. Your form has been received and will be reviewed by our team.</p>
+                <p>You will be notified when your submission has been processed.</p>
+                
+                <div class="confirmation-details" id="confirmation-details">
+                    <!-- Form details will be loaded here by JavaScript -->
+                </div>
+                
+                <div class="confirmation-actions">
+                    <a href="/templates" class="btn">Submit Another Form</a>
+                    <a href="/forms" class="btn">View My Forms</a>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 FormBuilder. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script src="/js/form-builder.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get the form ID from the URL
+            const formId = getUrlParameter('formId');
+            
+            if (formId) {
+                // Load the form details
+                fetch(`/api/application-forms/${formId}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(form => {
+                        // Display form details
+                        const detailsContainer = document.getElementById('confirmation-details');
+                        
+                        if (detailsContainer) {
+                            detailsContainer.innerHTML = `
+                                <div class="detail-item">
+                                    <span class="detail-label">Form ID:</span>
+                                    <span class="detail-value">${form.id}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Form Title:</span>
+                                    <span class="detail-value">${form.title}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Submitted:</span>
+                                    <span class="detail-value">${new Date(form.updatedAt).toLocaleString()}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Status:</span>
+                                    <span class="detail-value">${form.status}</span>
+                                </div>
+                            `;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading form details:', error);
+                        showAlert('Error loading form details. Please check your submission in "My Forms".', 'warning');
+                    });
+            }
+        });
+    </script>
+</body>
+</html>

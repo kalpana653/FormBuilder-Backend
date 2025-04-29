@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FormBuilder - Form Builder</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/builder.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>FormBuilder</h1>
+        </div>
+    </header>
+    
+    <nav>
+        <div class="container">
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/builder" class="active">Form Builder</a></li>
+                <li><a href="/forms">My Forms</a></li>
+                <li><a href="/admin" th:if="${isAdmin}">Admin</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <main class="container">
+        <div id="alert-container"></div>
+        
+        <div class="builder-container">
+            <div class="builder-header">
+                <h2>Form Builder</h2>
+                <div class="form-actions">
+                    <button id="save-form" class="btn"><i class="fas fa-save"></i> Save</button>
+                    <button id="preview-form" class="btn"><i class="fas fa-eye"></i> Preview</button>
+                    <button id="publish-form" class="btn btn-success"><i class="fas fa-paper-plane"></i> Publish</button>
+                </div>
+            </div>
+            
+            <div class="builder-content">
+                <div class="form-settings">
+                    <h3>Form Settings</h3>
+                    <div class="form-group">
+                        <label for="form-title">Form Title</label>
+                        <input type="text" id="form-title" placeholder="Enter form title">
+                    </div>
+                    <div class="form-group">
+                        <label for="form-description">Description</label>
+                        <textarea id="form-description" placeholder="Enter form description"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="form-success-message">Success Message</label>
+                        <textarea id="form-success-message" placeholder="Message to show after form submission"></textarea>
+                    </div>
+                </div>
+                
+                <div class="builder-workspace">
+                    <div class="field-types">
+                        <h3>Field Types</h3>
+                        <div class="field-type" draggable="true" data-type="text">
+                            <i class="fas fa-font"></i> Text Field
+                        </div>
+                        <div class="field-type" draggable="true" data-type="textarea">
+                            <i class="fas fa-align-left"></i> Text Area
+                        </div>
+                        <div class="field-type" draggable="true" data-type="number">
+                            <i class="fas fa-hashtag"></i> Number
+                        </div>
+                        <div class="field-type" draggable="true" data-type="email">
+                            <i class="fas fa-envelope"></i> Email
+                        </div>
+                        <div class="field-type" draggable="true" data-type="date">
+                            <i class="fas fa-calendar-alt"></i> Date
+                        </div>
+                        <div class="field-type" draggable="true" data-type="select">
+                            <i class="fas fa-caret-square-down"></i> Dropdown
+                        </div>
+                        <div class="field-type" draggable="true" data-type="radio">
+                            <i class="fas fa-dot-circle"></i> Radio Buttons
+                        </div>
+                        <div class="field-type" draggable="true" data-type="checkbox">
+                            <i class="fas fa-check-square"></i> Checkboxes
+                        </div>
+                        <div class="field-type" draggable="true" data-type="file">
+                            <i class="fas fa-file-upload"></i> File Upload
+                        </div>
+                        <div class="field-type" draggable="true" data-type="section">
+                            <i class="fas fa-grip-horizontal"></i> Section Break
+                        </div>
+                    </div>
+                    
+                    <div class="form-canvas">
+                        <div class="canvas-header">
+                            <h3>Form Layout</h3>
+                            <button id="clear-canvas" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i> Clear</button>
+                        </div>
+                        <div id="form-elements" class="form-elements">
+                            <div class="empty-canvas">
+                                <p><i class="fas fa-arrow-left"></i> Drag and drop fields here to build your form</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="field-properties">
+                        <h3>Field Properties</h3>
+                        <div id="no-field-selected" class="no-field-selected">
+                            <p>Select a field to edit its properties</p>
+                        </div>
+                        <div id="field-properties-form" class="field-properties-form" style="display: none;">
+                            <div class="form-group">
+                                <label for="field-label">Label</label>
+                                <input type="text" id="field-label" placeholder="Field label">
+                            </div>
+                            <div class="form-group">
+                                <label for="field-name">Name</label>
+                                <input type="text" id="field-name" placeholder="Field name (for data)">
+                            </div>
+                            <div class="form-group">
+                                <label for="field-placeholder">Placeholder</label>
+                                <input type="text" id="field-placeholder" placeholder="Field placeholder">
+                            </div>
+                            <div class="form-group">
+                                <label for="field-default">Default Value</label>
+                                <input type="text" id="field-default" placeholder="Default value">
+                            </div>
+                            <div class="form-group checkbox-group">
+                                <label>
+                                    <input type="checkbox" id="field-required">
+                                    Required
+                                </label>
+                            </div>
+                            <div id="field-options-container" class="form-group" style="display: none;">
+                                <label>Options</label>
+                                <div id="field-options" class="field-options">
+                                    <!-- Options will be added here -->
+                                </div>
+                                <button id="add-option" class="btn btn-sm"><i class="fas fa-plus"></i> Add Option</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Preview Modal -->
+        <div id="preview-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Form Preview</h2>
+                    <span class="close">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div id="form-preview"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" id="close-preview">Close</button>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 FormBuilder. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="/js/form-builder.js"></script>
+    <script src="/js/builder.js"></script>
+</body>
+</html>

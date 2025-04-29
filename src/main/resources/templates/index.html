@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FormBuilder - Home</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>FormBuilder</h1>
+        </div>
+    </header>
+    
+    <nav>
+        <div class="container">
+            <ul>
+                <li><a href="/" class="active">Home</a></li>
+                <li><a href="/builder">Form Builder</a></li>
+                <li><a href="/forms">My Forms</a></li>
+                <li><a href="/admin" th:if="${isAdmin}">Admin</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <main class="container">
+        <div id="alert-container"></div>
+        
+        <section class="hero">
+            <h2>Welcome to FormBuilder</h2>
+            <p>Create custom forms for your business, organization, or personal use.</p>
+            <div class="hero-buttons">
+                <a href="/builder" class="btn btn-primary">Create a Form</a>
+                <a href="/forms" class="btn">View My Forms</a>
+            </div>
+        </section>
+        
+        <section class="features">
+            <h2>Features</h2>
+            <div class="feature-grid">
+                <div class="feature">
+                    <i class="fas fa-pencil-alt"></i>
+                    <h3>Drag & Drop Builder</h3>
+                    <p>Create forms easily with our intuitive drag and drop interface.</p>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-th-list"></i>
+                    <h3>Multiple Field Types</h3>
+                    <p>Choose from text fields, dropdowns, checkboxes, radio buttons, and more.</p>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-mobile-alt"></i>
+                    <h3>Mobile Responsive</h3>
+                    <p>Forms work perfectly on all devices, from desktops to smartphones.</p>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-chart-bar"></i>
+                    <h3>Response Analytics</h3>
+                    <p>View and analyze form submissions with built-in reporting tools.</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="recent-forms" th:if="${not #lists.isEmpty(recentForms)}">
+            <h2>Recent Forms</h2>
+            <div class="forms-list">
+                <div class="form-item" th:each="form : ${recentForms}">
+                    <h3 th:text="${form.title}">Form Title</h3>
+                    <p th:text="${form.description}">Form Description</p>
+                    <div class="form-status" th:text="${form.status}">DRAFT</div>
+                    <a th:href="@{'/form?id=' + ${form.id}}" class="btn">Continue</a>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 FormBuilder. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script src="/js/form-builder.js"></script>
+</body>
+</html>

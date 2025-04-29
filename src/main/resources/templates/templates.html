@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FormBuilder - Form Templates</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>FormBuilder</h1>
+        </div>
+    </header>
+    
+    <nav>
+        <div class="container">
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/forms">My Forms</a></li>
+                <li><a href="/templates" class="active">Form Templates</a></li>
+                <li><a href="/admin" th:if="${isAdmin}">Admin</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <main class="container">
+        <div id="alert-container"></div>
+        
+        <section class="templates">
+            <h2>Available Forms</h2>
+            <p>Select a form to fill out and submit.</p>
+            
+            <div id="form-templates-list" class="templates-grid">
+                <!-- Templates will be loaded here by JavaScript -->
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i> Loading forms...
+                </div>
+            </div>
+        </section>
+        
+        <section class="form-instructions" style="margin-top: 2rem; padding: 1rem; background-color: #f8f9fa; border-radius: 5px;">
+            <h3>How to Submit a Form</h3>
+            <p>Follow these steps to submit a form:</p>
+            <ol>
+                <li>Click on one of the available forms above</li>
+                <li>Fill out all required fields in each section</li>
+                <li>Use the "Next" and "Previous" buttons to navigate between sections</li>
+                <li>Click "Submit" when you've completed all sections</li>
+            </ol>
+            <p>Your form will be reviewed by an administrator after submission.</p>
+        </section>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 FormBuilder. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script src="/js/form-builder.js"></script>
+</body>
+</html>

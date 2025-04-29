@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FormBuilder - Application Form</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>FormBuilder</h1>
+        </div>
+    </header>
+    
+    <nav>
+        <div class="container">
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/forms">My Forms</a></li>
+                <li><a href="/templates" class="active">Form Templates</a></li>
+                <li><a href="/admin">Admin</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <main class="container">
+        <div id="alert-container"></div>
+        
+        <div class="form-container">
+            <div id="application-form">
+                <!-- Form will be rendered here by JavaScript -->
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i> Loading form...
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 FormBuilder. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script src="/js/form-builder.js"></script>
+</body>
+</html>

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FormBuilder - My Forms</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>FormBuilder</h1>
+        </div>
+    </header>
+    
+    <nav>
+        <div class="container">
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/builder">Form Builder</a></li>
+                <li><a href="/forms" class="active">My Forms</a></li>
+                <li><a href="/admin" th:if="${isAdmin}">Admin</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <main class="container">
+        <div id="alert-container"></div>
+        
+        <div class="forms-header">
+            <h2>My Forms</h2>
+            <a href="/builder" class="btn btn-primary"><i class="fas fa-plus"></i> Create New Form</a>
+        </div>
+        
+        <div class="forms-container">
+            <div class="forms-tabs">
+                <ul>
+                    <li class="active"><a href="#all-forms">All Forms</a></li>
+                    <li><a href="#published-forms">Published</a></li>
+                    <li><a href="#draft-forms">Drafts</a></li>
+                </ul>
+            </div>
+            
+            <div class="forms-content">
+                <div id="all-forms" class="tab-pane active">
+                    <div th:if="${#lists.isEmpty(forms)}" class="no-forms">
+                        <p>You haven't created any forms yet.</p>
+                        <a href="/builder" class="btn">Create Your First Form</a>
+                    </div>
+                    
+                    <div th:unless="${#lists.isEmpty(forms)}" class="forms-grid">
+                        <div th:each="form : ${forms}" class="form-card">
+                            <div class="form-card-header">
+                                <h3 th:text="${form.title}">Form Title</h3>
+                                <span th:if="${form.published}" class="status-badge status-success">Published</span>
+                                <span th:unless="${form.published}" class="status-badge status-info">Draft</span>
+                            </div>
+                            <div class="form-card-body">
+                                <p th:text="${form.description}">Form description goes here.</p>
+                                <div class="form-meta">
+                                    <span><i class="far fa-calendar-alt"></i> <span th:text="${#temporals.format(form.createdAt, 'MMM d, yyyy')}">Jan 1, 2023</span></span>
+                                </div>
+                            </div>
+                            <div class="form-card-footer">
+                                <a th:href="@{'/builder?id=' + ${form.id}}" class="btn btn-sm"><i class="fas fa-edit"></i> Edit</a>
+                                <a th:href="@{'/form?id=' + ${form.id}}" class="btn btn-sm"><i class="fas fa-eye"></i> View</a>
+                                <button class="btn btn-sm btn-danger delete-form" th:data-id="${form.id}"><i class="fas fa-trash"></i> Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="published-forms" class="tab-pane">
+                    <div class="forms-grid" id="published-forms-grid">
+                        <!-- Published forms will be loaded here by JavaScript -->
+                        <div class="loading">
+                            <i class="fas fa-spinner fa-spin"></i> Loading forms...
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="draft-forms" class="tab-pane">
+                    <div class="forms-grid" id="draft-forms-grid">
+                        <!-- Draft forms will be loaded here by JavaScript -->
+                        <div class="loading">
+                            <i class="fas fa-spinner fa-spin"></i> Loading forms...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 FormBuilder. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script src="/js/form-builder.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab navigation
+            const tabLinks = document.querySelectorAll('.forms-tabs a');
+            
+            tabLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Get the target tab
+                    const targetId = this.getAttribute('href');
+                    
+                    // Hide all tab panes
+                    document.querySelectorAll('.tab-pane').forEach(pane => {
+                        pane.classList.remove('active');
+                    });
+                    
+                    // Show the target tab pane
+                    document.querySelector(targetId).classList.add('active');
+                    
+                    // Update active tab
+                    document.querySelectorAll('.forms-tabs li').forEach(li => {
+                        li.classList.remove('active');
+                    });
+                    
+                    this.parentElement.classList.add('active');
+                    
+                    // Load forms for the selected tab
+                    if (targetId === '#published-forms') {
+                        loadPublishedForms();
+                    } else if (targetId === '#draft-forms') {
+                        loadDraftForms();
+                    }
+                });
+            });
+            
+            // Delete form buttons
+            document.querySelectorAll('.delete-form').forEach(button => {
+                button.addEventListener('click', function() {
+                    const formId = this.getAttribute('data-id');
+                    deleteForm(formId);
+                });
+            });
+            
+            // Load published and draft forms
+            loadPublishedForms();
+            loadDraftForms();
+        });
+        
+        function loadPublishedForms() {
+            const publishedFormsGrid = document.getElementById('published-forms-grid');
+            publishedFormsGrid.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading forms...</div>';
+            
+            fetch('/api/forms')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(forms => {
+                    const publishedForms = forms.filter(form => form.published);
+                    
+                    if (publishedForms.length === 0) {
+                        publishedFormsGrid.innerHTML = `
+                            <div class="no-forms">
+                                <p>You don't have any published forms.</p>
+                                <a href="/builder" class="btn">Create a Form</a>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    publishedFormsGrid.innerHTML = '';
+                    
+                    publishedForms.forEach(form => {
+                        const formCard = document.createElement('div');
+                        formCard.className = 'form-card';
+                        
+                        const createdDate = new Date(form.createdAt);
+                        const formattedDate = createdDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                        
+                        formCard.innerHTML = `
+                            <div class="form-card-header">
+                                <h3>${form.title}</h3>
+                                <span class="status-badge status-success">Published</span>
+                            </div>
+                            <div class="form-card-body">
+                                <p>${form.description || 'No description'}</p>
+                                <div class="form-meta">
+                                    <span><i class="far fa-calendar-alt"></i> ${formattedDate}</span>
+                                </div>
+                            </div>
+                            <div class="form-card-footer">
+                                <a href="/builder?id=${form.id}" class="btn btn-sm"><i class="fas fa-edit"></i> Edit</a>
+                                <a href="/form?id=${form.id}" class="btn btn-sm"><i class="fas fa-eye"></i> View</a>
+                                <button class="btn btn-sm btn-danger delete-form" data-id="${form.id}"><i class="fas fa-trash"></i> Delete</button>
+                            </div>
+                        `;
+                        
+                        publishedFormsGrid.appendChild(formCard);
+                        
+                        // Add event listener to delete button
+                        formCard.querySelector('.delete-form').addEventListener('click', function() {
+                            const formId = this.getAttribute('data-id');
+                            deleteForm(formId);
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading published forms:', error);
+                    publishedFormsGrid.innerHTML = `
+                        <div class="error-message">
+                            <p>Error loading forms. Please try again later.</p>
+                        </div>
+                    `;
+                });
+        }
+        
+        function loadDraftForms() {
+            const draftFormsGrid = document.getElementById('draft-forms-grid');
+            draftFormsGrid.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading forms...</div>';
+            
+            fetch('/api/forms')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(forms => {
+                    const draftForms = forms.filter(form => !form.published);
+                    
+                    if (draftForms.length === 0) {
+                        draftFormsGrid.innerHTML = `
+                            <div class="no-forms">
+                                <p>You don't have any draft forms.</p>
+                                <a href="/builder" class="btn">Create a Form</a>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    draftFormsGrid.innerHTML = '';
+                    
+                    draftForms.forEach(form => {
+                        const formCard = document.createElement('div');
+                        formCard.className = 'form-card';
+                        
+                        const createdDate = new Date(form.createdAt);
+                        const formattedDate = createdDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                        
+                        formCard.innerHTML = `
+                            <div class="form-card-header">
+                                <h3>${form.title}</h3>
+                                <span class="status-badge status-info">Draft</span>
+                            </div>
+                            <div class="form-card-body">
+                                <p>${form.description || 'No description'}</p>
+                                <div class="form-meta">
+                                    <span><i class="far fa-calendar-alt"></i> ${formattedDate}</span>
+                                </div>
+                            </div>
+                            <div class="form-card-footer">
+                                <a href="/builder?id=${form.id}" class="btn btn-sm"><i class="fas fa-edit"></i> Edit</a>
+                                <a href="/form?id=${form.id}" class="btn btn-sm"><i class="fas fa-eye"></i> View</a>
+                                <button class="btn btn-sm btn-danger delete-form" data-id="${form.id}"><i class="fas fa-trash"></i> Delete</button>
+                            </div>
+                        `;
+                        
+                        draftFormsGrid.appendChild(formCard);
+                        
+                        // Add event listener to delete button
+                        formCard.querySelector('.delete-form').addEventListener('click', function() {
+                            const formId = this.getAttribute('data-id');
+                            deleteForm(formId);
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading draft forms:', error);
+                    draftFormsGrid.innerHTML = `
+                        <div class="error-message">
+                            <p>Error loading forms. Please try again later.</p>
+                        </div>
+                    `;
+                });
+        }
+        
+        function deleteForm(formId) {
+            if (confirm('Are you sure you want to delete this form? This action cannot be undone.')) {
+                fetch(`/api/forms/${formId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    
+                    // Show success message
+                    showAlert('Form deleted successfully!', 'success');
+                    
+                    // Reload the page after a short delay
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                })
+                .catch(error => {
+                    console.error('Error deleting form:', error);
+                    showAlert('Error deleting form. Please try again.', 'danger');
+                });
+            }
+        }
+        
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alert-container');
+            if (!alertContainer) {
+                return;
+            }
+            
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.innerHTML = message;
+            
+            alertContainer.innerHTML = '';
+            alertContainer.appendChild(alert);
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
