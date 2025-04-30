@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import com.form.FormBuilder.service.FormSubmissionService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.form.FormBuilder.model.FormSubmission;
+import com.form.FormBuilder.service.FormSubmissionService;
 @RestController
 @RequestMapping("/api/submissions")
 @CrossOrigin(origins = "*") // Allow cross-origin requests for frontend integration
@@ -64,44 +65,58 @@ public class FormSubmissionApiController {
     
     @PostMapping
     public ResponseEntity<FormSubmission> createSubmission(@RequestBody FormSubmission submission) {
-        // Set submitter information
-        submission.setSubmittedBy(submission.getUserAgent());
-        submission.setSubmitterName(submission.getSubmitterName());
-        submission.setSubmitterEmail(submission.getSubmitterEmail());
-        
-        // Set default values if not provided
-        if (submission.getSubmittedBy() == null) {
-            submission.setSubmittedBy("anonymous");
-        }
-        
-        // Set form version if available
-        if (submission.getFormVersion() == null) {
-            submission.setFormVersion("1.0");
-        }
-        
-        // Set submission metadata
-        submission.setUpdatedAt(LocalDateTime.now());
-        
-        FormSubmission createdSubmission = submissionService.createSubmission(submission);
-        
-        if (createdSubmission != null) {
-            // Create submission history entry for creation
-            FormSubmission.FormSubmissionHistory history = new FormSubmission.FormSubmissionHistory();
-            history.setId(UUID.randomUUID().toString());
-            history.setAction("CREATED");
-            history.setPerformedBy(submission.getSubmittedBy());
+        try {
+            // Set submitter information
+            submission.setSubmittedBy(submission.getUserAgent() != null ? submission.getUserAgent() : "anonymous");
             
-            if (createdSubmission.getHistory() == null) {
-                createdSubmission.setHistory(new ArrayList<>());
+            // Set default values if not provided
+            if (submission.getSubmittedBy() == null) {
+                submission.setSubmittedBy("anonymous");
             }
-            createdSubmission.getHistory().add(history);
             
-            // Save the updated submission with history
-            createdSubmission = submissionService.updateSubmission(createdSubmission);
+            // Set form version if available
+            if (submission.getFormVersion() == null) {
+                submission.setFormVersion("1.0");
+            }
             
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdSubmission);
-        } else {
-            return ResponseEntity.badRequest().build();
+            // Handle date conversion from ISO string if needed
+            if (submission.getSubmittedAt() == null) {
+                submission.setSubmittedAt(LocalDateTime.now());
+            }
+            
+            // Set submission metadata
+            submission.setUpdatedAt(LocalDateTime.now());
+            
+            // Set default status if not provided
+            if (submission.getStatus() == null) {
+                submission.setStatus("SUBMITTED");
+            }
+            
+            FormSubmission createdSubmission = submissionService.createSubmission(submission);
+            
+            if (createdSubmission != null) {
+                // Create submission history entry for creation
+                FormSubmission.FormSubmissionHistory history = new FormSubmission.FormSubmissionHistory();
+                history.setId(UUID.randomUUID().toString());
+                history.setAction("CREATED");
+                history.setPerformedBy(submission.getSubmittedBy());
+                history.setPerformedAt(LocalDateTime.now());
+                
+                if (createdSubmission.getHistory() == null) {
+                    createdSubmission.setHistory(new ArrayList<>());
+                }
+                createdSubmission.getHistory().add(history);
+                
+                // Save the updated submission with history
+                createdSubmission = submissionService.updateSubmission(createdSubmission);
+                
+                return ResponseEntity.status(HttpStatus.CREATED).body(createdSubmission);
+            } else {
+                return ResponseEntity.badRequest().build();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
     

@@ -5,6 +5,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,7 +18,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.form.FormBuilder.model.Form;
+import com.form.FormBuilder.model.User;
 import com.form.FormBuilder.service.FormService;
+import com.form.FormBuilder.service.UserService;
 
 @RestController
 @RequestMapping("/api/forms")
@@ -23,6 +28,9 @@ public class FormApiController {
 
     @Autowired
     private FormService formService;
+    
+    @Autowired
+    private UserService userService;
     
     @GetMapping
     public ResponseEntity<List<Form>> getAllForms() {
@@ -43,8 +51,15 @@ public class FormApiController {
     
     @PostMapping
     public ResponseEntity<Form> createForm(@RequestBody Form form) {
-        // For demo purposes, set a default user
-        form.setCreatedBy("user123");
+        // Get the authenticated user
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            User user = userService.findByUsername(userDetails.getUsername());
+            if (user != null) {
+                form.setCreatedBy(user.getId());
+            }
+        }
         
         Form createdForm = formService.createForm(form);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdForm);
