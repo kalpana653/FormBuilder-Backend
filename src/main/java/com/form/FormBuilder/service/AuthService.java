@@ -56,6 +56,7 @@ public class AuthService {
         user.setLastName(request.getLastName());
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
+        user.setPhoneNumber(request.getPhoneNumber());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRoles(Collections.singletonList("USER"));
         user.setCreatedAt(LocalDateTime.now());
@@ -64,33 +65,35 @@ public class AuthService {
         User savedUser = userRepository.save(user);
 
         // No token generation for registration
-        return new AuthResponse(null, savedUser.getId(), savedUser.getUsername(), savedUser.getEmail(), savedUser.getRoles(), "User registered successfully");
+        return new AuthResponse(null, savedUser.getId(), savedUser.getUsername(), savedUser.getEmail(), savedUser.getPhoneNumber(), savedUser.getRoles(), "User registered successfully");
     }
 
     public AuthResponse login(LoginRequest request) {
+        // Find the user by email first to get the username
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + request.getEmail()));
+        
+        // Authenticate using the username from the found user
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+                new UsernamePasswordAuthenticationToken(user.getUsername(), request.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         
-        // Find the user by username
-        User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        
         String token = jwtUtils.generateToken(user);
 
-        return new AuthResponse(token, user.getId(), user.getUsername(), user.getEmail(), user.getRoles(), "Login successful");
+        // Using the constructor with message parameter
+        return new AuthResponse(token, user.getId(), user.getUsername(), user.getEmail(), user.getPhoneNumber(), user.getRoles(), "Login successful");
     }
     
     /**
-     * Get the full name of a user by username
+     * Get the full name of a user by email
      * 
-     * @param username The username to look up
+     * @param email The email to look up
      * @return The full name (firstName + lastName) of the user
      */
-    public String getUserFullName(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public String getUserFullName(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
         
         return user.getFirstName() + " " + user.getLastName();
     }

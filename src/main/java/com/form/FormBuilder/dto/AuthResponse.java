@@ -22,6 +22,9 @@ public class AuthResponse {
     @JsonProperty("email")
     private String email;
     
+    @JsonProperty("phoneNumber")
+    private String phoneNumber;
+    
     @JsonProperty("roles")
     private List<String> roles;
     
@@ -59,6 +62,14 @@ public class AuthResponse {
     public void setEmail(String email) {
         this.email = email;
     }
+    
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+    
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
 
     public List<String> getRoles() {
         return roles;
@@ -76,6 +87,27 @@ public class AuthResponse {
         this.message = message;
     }
 
+    // New constructors with phoneNumber
+    public AuthResponse(String id, String username, String email, String phoneNumber, List<String> roles) {
+        this.id = id;
+        this.username = username;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.roles = roles;
+        this.message = "Operation successful";
+    }
+    
+    public AuthResponse(String token, String id, String username, String email, String phoneNumber, List<String> roles, String message) {
+        this.token = token;
+        this.id = id;
+        this.username = username;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.roles = roles;
+        this.message = message;
+    }
+    
+    // Legacy constructors for backward compatibility
     public AuthResponse(String id, String username, String email, List<String> roles) {
         this.id = id;
         this.username = username;
@@ -84,14 +116,8 @@ public class AuthResponse {
         this.message = "Operation successful";
     }
 
-    public AuthResponse(String token, String id, String username, String email, List<String> roles) {
-        this.token = token;
-        this.id = id;
-        this.username = username;
-        this.email = email;
-        this.roles = roles;
-        this.message = "Authentication successful";
-    }
+    // Replaced with phoneNumber version to avoid duplicate constructor signature
+
     
     public AuthResponse(String token, String id, String username, String email, List<String> roles, String message) {
         this.token = token;

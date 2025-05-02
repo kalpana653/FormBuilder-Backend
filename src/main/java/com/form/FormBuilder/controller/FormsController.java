@@ -18,7 +18,7 @@ public class FormsController {
     
     @GetMapping("/forms")
     public String forms(Model model) {
-        // For demo purposes, get all forms
+
         List<Form> forms = formService.getAllForms();
         model.addAttribute("forms", forms);
         model.addAttribute("isAdmin", true); // For demo purposes, everyone is an admin

@@ -21,6 +21,10 @@ public class RegisterRequest {
     @NotBlank(message = "Email is required")
     @Email(message = "Email should be valid")
     private String email;
+    
+    @NotBlank(message = "Phone number is required")
+    @Size(min = 10, max = 15, message = "Phone number must be between 10 and 15 characters")
+    private String phoneNumber;
 
     public @NotBlank(message = "First name is required") String getFirstName() {
         return firstName;
@@ -52,6 +56,14 @@ public class RegisterRequest {
 
     public void setEmail(@NotBlank(message = "Email is required") @Email(message = "Email should be valid") String email) {
         this.email = email;
+    }
+    
+    public @NotBlank(message = "Phone number is required") @Size(min = 10, max = 15, message = "Phone number must be between 10 and 15 characters") String getPhoneNumber() {
+        return phoneNumber;
+    }
+    
+    public void setPhoneNumber(@NotBlank(message = "Phone number is required") @Size(min = 10, max = 15, message = "Phone number must be between 10 and 15 characters") String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     public @NotBlank(message = "Password is required") @Size(min = 6, max = 40, message = "Password must be between 6 and 40 characters") String getPassword() {

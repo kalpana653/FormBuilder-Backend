@@ -26,6 +26,8 @@ public class User {
     @Indexed(unique = true)
     private String email;
     
+    private String phoneNumber;
+    
     private String password;
     
     private List<String> roles = new ArrayList<>();
@@ -75,6 +77,14 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+    
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+    
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     public String getPassword() {

@@ -43,6 +43,7 @@ public class AuthController {
             userData.put("name", registerRequest.getFirstName() + " " + registerRequest.getLastName());
             userData.put("userId", response.getId());
             userData.put("email", response.getEmail());
+            userData.put("phoneNumber", response.getPhoneNumber());
             
             Map<String, Object> standardResponse = new HashMap<>();
             standardResponse.put("statusCode", HttpStatus.CREATED.value());
@@ -71,21 +72,21 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(standardResponse);
         }
     }
-
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
         try {
-            System.out.println("Received login request for: " + loginRequest.getUsername());
+            System.out.println("Received login request for email: " + loginRequest.getEmail());
             AuthResponse response = authService.login(loginRequest);
-            System.out.println("Login successful for: " + loginRequest.getUsername());
+            System.out.println("Login successful for email: " + loginRequest.getEmail());
             
             // Get user's first and last name from the database
-            String fullName = authService.getUserFullName(loginRequest.getUsername());
+            String fullName = authService.getUserFullName(loginRequest.getEmail());
             
             Map<String, Object> userData = new HashMap<>();
             userData.put("name", fullName);
             userData.put("userId", response.getId());
             userData.put("email", response.getEmail());
+            userData.put("phoneNumber", response.getPhoneNumber());
             userData.put("token", response.getToken());
             
             Map<String, Object> standardResponse = new HashMap<>();
@@ -100,7 +101,7 @@ public class AuthController {
             
             Map<String, Object> standardResponse = new HashMap<>();
             standardResponse.put("statusCode", HttpStatus.UNAUTHORIZED.value());
-            standardResponse.put("statusMessage", "Invalid username or password");
+            standardResponse.put("statusMessage", "Invalid email or password");
             standardResponse.put("data", null);
             
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(standardResponse);
