@@ -75,12 +75,22 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
         try {
-            System.out.println("Received login request for email: " + loginRequest.getEmail());
+            // Log the login attempt with either username or email
+            String loginIdentifier = loginRequest.getUsername() != null ? 
+                "username: " + loginRequest.getUsername() : 
+                "email: " + loginRequest.getEmail();
+            
+            System.out.println("Received login request for " + loginIdentifier);
             AuthResponse response = authService.login(loginRequest);
-            System.out.println("Login successful for email: " + loginRequest.getEmail());
+            System.out.println("Login successful for " + loginIdentifier);
             
             // Get user's first and last name from the database
-            String fullName = authService.getUserFullName(loginRequest.getEmail());
+            // Use the identifier that was provided in the request
+            String identifier = loginRequest.getUsername() != null ? 
+                loginRequest.getUsername() : 
+                loginRequest.getEmail();
+            
+            String fullName = authService.getUserFullName(identifier);
             
             Map<String, Object> userData = new HashMap<>();
             userData.put("name", fullName);
@@ -101,7 +111,7 @@ public class AuthController {
             
             Map<String, Object> standardResponse = new HashMap<>();
             standardResponse.put("statusCode", HttpStatus.UNAUTHORIZED.value());
-            standardResponse.put("statusMessage", "Invalid email or password");
+            standardResponse.put("statusMessage", "Invalid credentials");
             standardResponse.put("data", null);
             
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(standardResponse);

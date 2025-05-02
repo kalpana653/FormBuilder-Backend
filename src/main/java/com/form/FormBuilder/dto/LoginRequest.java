@@ -9,7 +9,7 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class LoginRequest {
     
-    @NotBlank(message = "Email is required")
+    // Email is no longer required by default, as we now support username login
     @Email(message = "Please provide a valid email address")
     private String email;
     
@@ -19,11 +19,12 @@ public class LoginRequest {
     @NotBlank(message = "Password is required")
     private String password;
 
-    public @NotBlank(message = "Email is required") @Email(message = "Please provide a valid email address") String getEmail() {
+    // Remove validation annotations from getters/setters as they're already on the fields
+    public String getEmail() {
         return email;
     }
 
-    public void setEmail(@NotBlank(message = "Email is required") @Email(message = "Please provide a valid email address") String email) {
+    public void setEmail(String email) {
         this.email = email;
     }
     
@@ -35,11 +36,11 @@ public class LoginRequest {
         this.username = username;
     }
 
-    public @NotBlank(message = "Password is required") String getPassword() {
+    public String getPassword() {
         return password;
     }
 
-    public void setPassword(@NotBlank(message = "Password is required") String password) {
+    public void setPassword(String password) {
         this.password = password;
     }
 }

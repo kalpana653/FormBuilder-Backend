@@ -69,9 +69,20 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-        // Find the user by email first to get the username
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found with email: " + request.getEmail()));
+        User user;
+        
+        // Check if login is by username or email
+        if (request.getUsername() != null && !request.getUsername().isEmpty()) {
+            // Find user by username
+            user = userRepository.findByUsername(request.getUsername())
+                    .orElseThrow(() -> new RuntimeException("User not found with username: " + request.getUsername()));
+        } else if (request.getEmail() != null && !request.getEmail().isEmpty()) {
+            // Find user by email
+            user = userRepository.findByEmail(request.getEmail())
+                    .orElseThrow(() -> new RuntimeException("User not found with email: " + request.getEmail()));
+        } else {
+            throw new RuntimeException("Either username or email must be provided");
+        }
         
         // Authenticate using the username from the found user
         Authentication authentication = authenticationManager.authenticate(
@@ -86,14 +97,23 @@ public class AuthService {
     }
     
     /**
-     * Get the full name of a user by email
+     * Get the full name of a user by email or username
      * 
-     * @param email The email to look up
+     * @param identifier The email or username to look up
      * @return The full name (firstName + lastName) of the user
      */
-    public String getUserFullName(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+    public String getUserFullName(String identifier) {
+        User user;
+        
+        // Try to find by email first
+        if (identifier.contains("@")) {
+            user = userRepository.findByEmail(identifier)
+                    .orElseThrow(() -> new RuntimeException("User not found with email: " + identifier));
+        } else {
+            // If not an email, try by username
+            user = userRepository.findByUsername(identifier)
+                    .orElseThrow(() -> new RuntimeException("User not found with username: " + identifier));
+        }
         
         return user.getFirstName() + " " + user.getLastName();
     }
