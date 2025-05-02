@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -33,7 +32,6 @@ public class FormSubmissionApiController {
     public FormSubmissionApiController(FormSubmissionService submissionService) {
         this.submissionService = submissionService;
     }
-    
     @GetMapping
     public ResponseEntity<List<FormSubmission>> getAllSubmissions() {
         List<FormSubmission> submissions = submissionService.getAllSubmissions();
@@ -71,12 +69,11 @@ public class FormSubmissionApiController {
             
             // Set default values if not provided
             if (submission.getSubmittedBy() == null) {
-                submission.setSubmittedBy("anonymous");
+                submission.setSubmittedBy(submission.getSubmittedBy());
             }
-            
             // Set form version if available
             if (submission.getFormVersion() == null) {
-                submission.setFormVersion("1.0");
+                submission.setFormVersion(submission.getFormVersion());
             }
             
             // Handle date conversion from ISO string if needed
@@ -270,13 +267,13 @@ public class FormSubmissionApiController {
         List<FormSubmission> submissions = submissionService.findByDueDateAfter(parsedDate);
         return ResponseEntity.ok(submissions);
     }
-    
+
     @GetMapping("/priority/{priority}")
     public ResponseEntity<List<FormSubmission>> getSubmissionsByPriority(@PathVariable int priority) {
         List<FormSubmission> submissions = submissionService.findByPriority(priority);
         return ResponseEntity.ok(submissions);
     }
-    
+
     @GetMapping("/search/field")
     public ResponseEntity<List<FormSubmission>> searchByFormDataField(
             @RequestParam String field,
@@ -285,7 +282,6 @@ public class FormSubmissionApiController {
         List<FormSubmission> submissions = submissionService.findByFormDataFieldContaining(field, value);
         return ResponseEntity.ok(submissions);
     }
-    
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSubmission(@PathVariable String id) {
         FormSubmission submission = submissionService.getSubmissionById(id);
